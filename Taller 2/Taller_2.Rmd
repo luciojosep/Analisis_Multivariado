@@ -1,0 +1,273 @@
+---
+title: "Taller 2"
+output: pdf_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval=FALSE)
+```
+
+# Taller 2
+
+## PCA
+
+1. Considerar la base `df_pca.csv`
+  
+  a. Utilizar el siguiente código para elegir un número de componentes principales adecuados.
+```{r}
+diagPCA=function(pca){
+  print("Summary:")
+  print(summary(pca))
+  print(screeplot(pca,type ="lines"))
+}
+```
+  
+  b. Completar los siguientes códigos para reconstruir la base reduciendo la dimensión a dicho número utilizando los resultados de svd y los resultados de pca.
+```{r}
+recDataRed_pca=function(df,k){
+  n=nrow(___)
+  p=ncol(___)
+  pca_Aux=prcomp(___,center = ___,scale. = ___)
+  z_Aux=pca_Aux$x[,___]
+  v_Aux=pca_Aux$rotation[,___]
+  s_Aux=diag(pca_Aux$____)
+  m_Aux=matrix(pca_Aux$center,nrow = ___,ncol = ___,byrow = T)
+  df_Red=z_Aux%*%t(v_Aux)%*%s_Aux+m_Aux
+  return(df_Red)
+}
+
+recDataRed_svd=function(df,k){
+  n=nrow(___)
+  p=ncol(___)
+  df_sc=scale(___)
+  m_sc=attr(df_sc,"scaled:center")
+  M_sc=matrix(m_sc,nrow=____,ncol=____,byrow = T)
+  s_sc=attr(df_sc,"scaled:scale")
+  svd_Aux=svd(as.matrix(____))
+  u_Aux=svd_Aux$___[,___]
+  d_Aux=diag(svd_Aux$___[___])
+  v_Aux=svd_Aux$___[,___]
+  df_Red=u_Aux%*%d_Aux%*%t(v_Aux)%*%diag(s_sc)+M_sc
+  return(df_Red)
+}
+```
+    
+  c. Completar el siguiente código para graficar los datos proyectados en los componentes principales elegidos. Agregar color según alguna otra variable y/o cuán bien representadas están las observaciones en dicha proyección.
+```{r}
+scorePlot_PCA=function(pca,ax,col.Ch,tit=""){
+  sPl=fviz_pca_ind(____,axes = ____, geom.ind = "point", 
+                   col.ind = ____,title=____, 
+                   gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"))
+  return(sPl)
+}
+```
+  
+
+  d. Graficar las correlaciones entre variables y componentes principales e identificar qué variable se correlaciona con cada componente (identificar el signo también).
+```{r}
+corPlot_PCA=function(pca,ax,col.Ch,tit=""){
+  cPl=fviz_pca_var(___,axes = ____, 
+                   col.var = ____,title=___, 
+                   gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"))
+  return(cPl)
+}
+```
+  
+    
+  e. Realizar un biplot que permite ver tanto representación de observaciones como de variables en simultáneo. Agregar color por alguna variable.
+```{r}
+biPlot_PCA=function(pca,ax,colI.Ch,colV.Ch,tit=""){
+  bPl=fviz_pca_biplot(____,axes=___,
+                      geom.ind = "point", col.ind = ____, 
+                      col.var = _____, 
+                      gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),title=____)
+  return(bPl)
+}
+```
+  
+
+## Análisis Factorial
+
+2. Considerar la base `df_af.csv`:
+
+  a. Utilizar el comando `factanal` para elegir un número de factores adecuado. Observar también los autovalores de la matriz de correlación para decidir. 
+  
+  b. Completar la siguiente función para representar las correlaciones entre variables y los factores. Identificar las variables correlacionadas con cada factor, considerando el signo.
+```{r}
+RepFact=function(AnFact,Facts=1:2){
+  loadings = as.data.frame(AnFact$____[, Facts])
+  LabFacts=paste0("Factor",____)
+  GG=ggplot(loadings, aes(x = get(LabFacts[1]), y = get(LabFacts[2]), label = rownames(_____))) +
+    geom_point() + geom_text(vjust = -0.5) +
+    labs(title = "Cargas Factoriales")+
+    xlab(LabFacts[1])+ylab(LabFacts[2])+
+    theme_bw()+
+    xlim(c(-1.2,1.2))+ylim(c(-1.2,1.2))+
+    coord_equal()
+  return(GG)
+}
+```
+\newpage
+  
+  c. Completar el siguiente código para representar las observaciones proyectadas sobre los factores. Agregar color por factores restantes, si es que los hubiere.
+  
+```{r}
+RepScore=function(AnFact,Facts=1:2,col=NULL){
+  scores = as.data.frame(AnFact$_____)
+  LabFacts=paste0("Factor",____)
+  if(is.null(col)){
+    GG=ggplot(scores, aes(x = get(LabFacts[1]), y = get(LabFacts[2]))) +
+      geom_point(alpha=0.5)
+  }else{
+    ColFacts=paste0("Factor",___)
+    GG=ggplot(scores, aes(x = get(LabFacts[1]), y = get(LabFacts[2]),color=get(ColFacts))) +
+      geom_point(alpha=0.5)+
+      labs(color = ____)+
+      scale_color_viridis_c()
+  }
+  GG=GG+
+    labs(title = "Scores Factoriales")+
+    xlab(LabFacts[1])+ylab(LabFacts[2])+
+    theme_bw()+
+    coord_equal()
+  return(GG)
+}
+```
+
+
+## CA
+
+3. Considerar la tabla de contingencia `Tab_ca.csv`. Procesar la tabla completando los siguientes comandos:
+```{r}
+nR=nrow(_____)
+nC=ncol(_____)
+colnames(_____)=paste0("A",1:nC)
+rownames(_____)=paste0("B",1:nR)
+```
+
+  a. Completar el siguiente código para calcular la matriz de valores esperados según independencia.
+```{r}
+EMat=function(Tab){
+  nR=nrow(Tab)
+  nC=ncol(Tab)
+  sR=rowSums(Tab)
+  sC=colSums(Tab)
+  sT=sum(Tab)
+  E=as.matrix(___)%*%t(as.matrix(___))/___
+  colnames(E)=paste0("A",1:nC)
+  rownames(E)=paste0("B",1:nR)
+  return(E)
+}
+```
+  
+  b. Completar el siguiente código para calcular la matriz de desviaciones entre las observaciones y los valores esperados.
+```{r}
+CMat=function(Tab,E){
+  C=(___-___)/sqrt(___)
+  return(C)
+}
+```
+  
+  
+\newpage
+c. Completar el siguiente código para elegir un número de ejes adecuado según la varianza 
+```{r}
+pVarEx=function(C){
+  svd_Aux=svd(C)
+  df_pVE=data.frame("Autovalores"=svd_Aux$___^2)
+  df_pVE$Porcentaje_Acumulado=cumsum(df_pVE$Autovalores)*100/sum(df_pVE$Autovalores)
+  return(df_pVE)
+}
+```
+  
+  
+  d. Completar el siguiente código para representar cada fila y cada columna en el eje correspondiente e identificar combinaciones de filas frecuentes e infrecuentes.
+```{r}
+rScore=function(C,nRs,k){
+  C=as.matrix(C)
+  CCt=___%*%t(___)
+  eig_Aux=eigen(___)
+  A_Aux=diag(1/sqrt(nRs))
+  rSc=A_Aux%*%eig_Aux$____[,1:k]%*%diag(sqrt(eig_Aux$____[1:k]))
+  rSc=data.frame(rSc)
+  names(rSc)=paste0("Eje",1:k)
+  rSc$Lab=rownames(C)
+  return(rSc)
+}
+
+cScore=function(C,nCs,k){
+  C=as.matrix(C)
+  CtC=t(___)%*%____
+  eig_Aux=eigen(____)
+  B_Aux=diag(1/sqrt(nCs))
+  cSc=B_Aux%*%eig_Aux$____[,1:k]%*%diag(sqrt(eig_Aux$____[1:k]))
+  cSc=data.frame(cSc)
+  names(cSc)=paste0("Eje",___)
+  cSc$Lab=colnames(C)
+  return(cSc)
+}
+
+RepGraf=function(rS,cS,ejs){
+  EjLabs=paste0("Eje",____)
+  GG=rS %>% 
+    ggplot(aes(x=get(EjLabs[1]),y=get(EjLabs[2])))+
+    geom_text(aes(label=____),color="blue")+
+    geom_text(data=cS,aes(label=___),color="red")+
+    theme_bw()+
+    xlab(EjLabs[1])+ylab(EjLabs[2])
+  return(GG)
+}
+```
+  
+\newpage  
+  
+## MDS
+
+4. Considerar la base `df_mds.csv`
+
+  a. Completar el siguiente código para proyectar las distancias Euclídeas sobre un número adecuado de componentes.
+```{r}
+mds_Mink=function(df,k,p=1){
+  dMat=dist(___,method = ____,p=p)
+  mds_Aux=cmdscale(___,____,eig = ____)
+  print("Autovalores:")
+  print(mds_Aux$eig[___])
+  print("Criterio Sólo Positivos:")
+  print(cSoloPos(mds_Aux$eig)[___])
+  print("Criterio Módulo:")
+  print(cAbs(mds_Aux$eig)[___])
+  print("Criterio Cuadrados:")
+  print(cSq(mds_Aux$eig)[____])
+  df_mds=data.frame(mds_Aux$____)
+  names(df_mds)=paste0("Dim",___)
+  df_mds=cbind.data.frame(df_mds,df)
+  return(df_mds)
+}
+```
+    
+
+  b. Completar el siguiente código para graficar las observaciones sobre las componentes elegidas. Agregar color según otras variables para identificar las variables que guían la disimilitud.
+```{r}
+repGrafMDS=function(df_mds,dims,col.Ch=NULL){
+  DimLabs=paste0("Dim",___)
+  GG=____ %>% 
+    ggplot(aes(x=get(DimLabs[1]),y=get(DimLabs[2])))+
+    theme_bw()+
+    xlab(DimLabs[1])+
+    ylab(DimLabs[2])
+  if(is.null(col.Ch)){
+    GG=GG+
+      geom_text(mapping=aes(label=rownames(____)),alpha=0.5)
+  }else{
+    GG=GG+
+      geom_text(mapping=aes(label=rownames(____),color=get(____)),alpha=0.5)+
+      scale_color_viridis_c()+
+      labs(colour=col.Ch)
+    }
+  return(GG)
+}
+```
+    
+    
+  c. Deducir cómo utilizar los códigos anteriores para repetir las consignas anteriores utilizando la distancia Manhattan con el mismo número de componentes. ¿Qué diferencias observa?
