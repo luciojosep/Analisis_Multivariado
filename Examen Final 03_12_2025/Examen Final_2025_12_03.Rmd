@@ -1,0 +1,151 @@
+---
+title: "Examen Final - Análisis Multivariado"
+output: pdf_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,eval = FALSE)
+```
+
+1. Considerar las bases `df_a`, `df_b` y `df_c` y continúa con su número de legajo.
+
+a. En cada base, calcular el vector de medias, la matriz de covarianza y la matriz de correlación.
+
+b. Completar las siguientes funciones para hacer gráficos de densidad conjunta de ambas variables de cada base. Identifique características de cada distribución y relacione con el punto anterior.
+
+```{r}
+dCont2DGG=function(Base,x.Ch,y.Ch){
+  GG=_____ %>% 
+      ggplot(aes(x=get(____),y=get(____)))+
+      stat_density_2d(aes(color = ..level..)) +
+      scale_color_viridis_c()
+  return(GG)
+}
+
+dFill2DGG=function(Base,x.Ch,y.Ch){
+    GG=Base %>% 
+      ggplot(aes(x=get(_____),y=get(_____)))+
+      stat_density_2d(aes(fill = ..density..), geom = "raster", contour = FALSE) +
+      scale_fill_viridis_c()
+  return(GG)
+}
+
+textGG=function(GG,tL,xL,yL,tS,aTS,atS){
+  GG=GG+
+    labs(title = ______)+
+    xlab(___)+
+    ylab(____)+
+    theme_bw()+
+    theme(title = element_text(size=_____,face = "bold"),
+          axis.title = element_text(size=____,face = "plain"),
+          axis.text = element_text(size=___),
+          plot.title = element_text(hjust=0.5))
+  return(GG)
+}
+```
+
+
+b. ¿Cuál de las bases tiene una distribución de sus columnas que se asemeja a una normal multivariada?
+
+\newpage
+
+2. Considerar la base `df_pca` y continúa con su número de legajo.
+
+a. Utilizar la siguiente función para hacer PCA y elegir un número de componentes adecuado.
+```{r}
+diagPCA=function(pca){
+  print("Summary:")
+  print(summary(pca))
+  print(screeplot(pca,type ="lines"))
+}
+```
+
+b. Completar la siguiente función para reconstruir las variables originales a partir de los componentes principales elegidos:
+
+```{r}
+recDataRed_pca=function(df,k){
+  n=nrow(___)
+  p=ncol(___)
+  pca_Aux=prcomp(___,center = ___,scale. = ___)
+  z_Aux=pca_Aux$x[,___]
+  v_Aux=pca_Aux$rotation[,___]
+  s_Aux=diag(pca_Aux$____)
+  m_Aux=matrix(pca_Aux$center,nrow = ___,ncol = ___,byrow = T)
+  df_Red=z_Aux%*%t(v_Aux)%*%s_Aux+m_Aux
+  return(df_Red)
+}
+```
+
+c. Completar la siguiente función para graficar los datos proyectados en los componentes principales elegidos. Agregar color según alguna variable e identificar si hay variables se correlaciona y cómo con cada componente.
+```{r}
+scorePlot_PCA=function(pca,ax,col.Ch,tit=""){
+  sPl=fviz_pca_ind(____,axes = ____, geom.ind = "point", 
+                   col.ind = ____,title=____, 
+                   gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"))
+  return(sPl)
+}
+```
+
+\newpage
+
+3. Considerar la base denominada `df_af` y continúa con su número de legajo:
+
+  a. Completar el siguiente código para elegir un número de factores adecuado.
+```{r}
+AnFact=factanal(___,___,scores = "regression")
+
+cor_A=cor(____)
+eig_A=eigen(____)
+print(eig_A$____)
+```
+
+  
+  b. Completar la siguiente función para representar las correlaciones entre variables y los factores. Identificar las variables correlacionadas con cada factor, considerando el signo.
+  
+```{r}
+RepFact=function(AnFact,Facts=1:2){
+  loadings = as.data.frame(AnFact$____[, Facts])
+  LabFacts=paste0("Factor",____)
+  GG=ggplot(loadings, aes(x = get(LabFacts[1]), y = get(LabFacts[2]), label = rownames(_____))) +
+    geom_point() + geom_text(vjust = -0.5) +
+    labs(title = "Cargas Factoriales")+
+    xlab(LabFacts[1])+ylab(LabFacts[2])+
+    theme_bw()+
+    xlim(c(-1.2,1.2))+ylim(c(-1.2,1.2))+
+    coord_equal()
+  return(GG)
+}
+```
+  
+  
+  c. Completar la siguiente función para representar las observaciones proyectadas sobre los factores. Agregar color por variables restantes, si es que los hubiere.
+```{r}
+RepScore=function(AnFact,Facts=1:2,col=NULL){
+  scores = as.data.frame(AnFact$___)
+  LabFacts=paste0("Factor",___)
+  if(is.null(col)){
+    GG=ggplot(scores, aes(x = get(LabFacts[1]), y = get(LabFacts[2]))) +
+      geom_point(alpha=0.5)
+  }else{
+    if(is.integer(col)){
+      ColFacts=paste0("Factor",col)
+      GG=ggplot(scores, aes(x = get(LabFacts[1]), y = get(LabFacts[2]),color=get(ColFacts))) +
+        geom_point(alpha=0.5)+
+        labs(color = ____)+
+        scale_color_viridis_c()
+    }else{
+      ColFacts=paste0("Factor",col)
+      GG=ggplot(scores, aes(x = get(LabFacts[1]), y = get(LabFacts[2]),color=col)) +
+        geom_point(alpha=0.5)+
+        scale_color_viridis_c()
+    }
+  }
+  GG=GG+
+    labs(title = "Scores Factoriales")+
+    xlab(LabFacts[1])+ylab(LabFacts[2])+
+    theme_bw()+
+    coord_equal()
+  return(GG)
+}
+```
